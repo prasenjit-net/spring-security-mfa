@@ -1,7 +1,7 @@
 package net.prasenjit.poc.springsecuritymfa.config;
 
 import lombok.RequiredArgsConstructor;
-import net.prasenjit.poc.springsecuritymfa.service.MfaUserService;
+import net.prasenjit.poc.springsecuritymfa.service.MfaAuthenticatorService;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,11 +10,11 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    private final MfaUserService mfaUserService;
+    private final MfaAuthenticatorService mfaAuthenticatorService;
 
     @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(mfaUserService);
+    protected void configure(AuthenticationManagerBuilder auth) {
+        auth.authenticationProvider(mfaAuthenticatorService);
     }
 
     @Override
