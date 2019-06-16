@@ -13,6 +13,7 @@
                 <div class="card-body">
                     <h5 class="card-title text-center">TOTP QR</h5>
                     <p>Use Google Authenticator to scan this QR to setup the TOTP</p>
+                    <img th:src="${otpUrl}" alt="TOTP URL">
                     <div class="alert alert-light" role="alert">
                         Click here to <a class="alert-link" th:href="@{/}">Sign In</a>
                     </div>

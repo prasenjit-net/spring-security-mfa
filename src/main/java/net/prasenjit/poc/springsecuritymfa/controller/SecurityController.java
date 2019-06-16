@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import java.io.UnsupportedEncodingException;
+
 @Controller
 @RequiredArgsConstructor
 public class SecurityController {
@@ -26,9 +28,14 @@ public class SecurityController {
     }
 
     @PostMapping("register")
-    public String registerDone(@ModelAttribute MfaUser user, Model model) {
+    public String registerDone(@ModelAttribute MfaUser user, Model model) throws UnsupportedEncodingException {
         MfaUser user1 = mfaUserService.createUser(user.getUsername(), user.getPassword());
-        model.addAttribute("user", user1);
+        model.addAttribute("otpUrl", mfaUserService.generateQRUrl(user1));
         return "register-done";
+    }
+
+    @GetMapping("mfaQrCode")
+    public void generateQrImage() {
+
     }
 }
