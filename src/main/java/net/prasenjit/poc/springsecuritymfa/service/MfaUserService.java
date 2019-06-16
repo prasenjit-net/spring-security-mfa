@@ -1,5 +1,12 @@
 package net.prasenjit.poc.springsecuritymfa.service;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import lombok.RequiredArgsConstructor;
 import net.prasenjit.poc.springsecuritymfa.model.MfaUser;
 import net.prasenjit.poc.springsecuritymfa.repository.MfaUserRepository;
@@ -11,17 +18,17 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Base64Utils;
 
-import java.net.URLEncoder;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class MfaUserService implements UserDetailsService {
-
-    private static final String APP_NAME = "mfa";
-    private static String QR_PREFIX =
-            "https://chart.googleapis.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=";
 
     private final MfaUserRepository mfaUserRepository;
 
@@ -48,8 +55,16 @@ public class MfaUserService implements UserDetailsService {
         return mfaUserRepository.save(mfaUser);
     }
 
-    public String generateQRUrl(MfaUser user) {
+    public String generateBase64QrImage(MfaUser user) throws WriterException, IOException {
         Totp totp = new Totp(user.getMfaSecret());
-        return QR_PREFIX + URLEncoder.encode(totp.uri(user.getUsername()));
+        Map<EncodeHintType, Object> hintMap = new HashMap<>();
+        hintMap.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
+
+        BitMatrix matrix = new MultiFormatWriter().encode(totp.uri("mfa:" + user.getUsername()),
+                BarcodeFormat.QR_CODE, 200, 200, hintMap);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        MatrixToImageWriter.writeToStream(matrix, "png", stream);
+
+        return "data:image/png;base64," + Base64Utils.encodeToString(stream.toByteArray());
     }
 }

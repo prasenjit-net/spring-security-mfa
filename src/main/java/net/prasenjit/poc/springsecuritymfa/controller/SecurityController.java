@@ -1,5 +1,6 @@
 package net.prasenjit.poc.springsecuritymfa.controller;
 
+import com.google.zxing.WriterException;
 import lombok.RequiredArgsConstructor;
 import net.prasenjit.poc.springsecuritymfa.model.MfaUser;
 import net.prasenjit.poc.springsecuritymfa.service.MfaUserService;
@@ -9,7 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
 
 @Controller
 @RequiredArgsConstructor
@@ -28,9 +29,9 @@ public class SecurityController {
     }
 
     @PostMapping("register")
-    public String registerDone(@ModelAttribute MfaUser user, Model model) throws UnsupportedEncodingException {
+    public String registerDone(@ModelAttribute MfaUser user, Model model) throws IOException, WriterException {
         MfaUser user1 = mfaUserService.createUser(user.getUsername(), user.getPassword());
-        model.addAttribute("otpUrl", mfaUserService.generateQRUrl(user1));
+        model.addAttribute("qrImage", mfaUserService.generateBase64QrImage(user1));
         return "register-done";
     }
 
